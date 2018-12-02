@@ -1,0 +1,31 @@
+image: golang:1.10
+
+stages:
+  - test
+  - release
+
+variables:
+  REPO_NAME: gitlab.com/visig/tf
+
+before_script:
+  - mkdir -p $GOPATH/src/$REPO_NAME
+  - cp -Trv $CI_PROJECT_DIR $GOPATH/src/$REPO_NAME
+  - cd $GOPATH/src/$REPO_NAME
+  - go get ./...
+
+test-job:
+  stage: test
+  script:
+    - go test ./...
+
+tf-binary-dists:
+  stage: release
+  only:
+    - tags
+  script:
+    - ./maintain.sh build
+    - cp -Trv dist $CI_PROJECT_DIR/dist
+  artifacts:
+      name: tf-binary-dists
+      paths:
+        - $CI_PROJECT_DIR/dist/

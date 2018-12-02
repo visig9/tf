@@ -1,4 +1,4 @@
-package cmd
+package main
 
 import (
 	"os"
@@ -9,6 +9,8 @@ import (
 	"gitlab.com/visig/tf/tfreq"
 )
 
+var version string
+
 var terms []string
 
 var caseInsensitive bool
@@ -18,8 +20,8 @@ var printZero bool
 
 var rootCmd = &cobra.Command{
 	Use:   os.Args[0] + " FILE...",
-	Short: "The tool for calculate term-frequency of files.",
-	Long: `The tool for calculate term-frequency of files.
+	Short: "Calculate term-frequency of files.",
+	Long: `Calculate term-frequency of files.
 
   Calculate the term-frequency between FILE and TERMs.
   Accept multiple -t TERMs and multiple FILEs at one time.
@@ -38,15 +40,7 @@ var rootCmd = &cobra.Command{
 
 		printScore(args, terms, flag, printZero)
 	},
-	Version: "0.0.1",
-}
-
-// Execute rootCmd
-func Execute() {
-	if err := rootCmd.Execute(); err != nil {
-		logger.Err.Println(err)
-		os.Exit(1)
-	}
+	Version: version,
 }
 
 func init() {
@@ -67,4 +61,11 @@ func init() {
 		&printZero, "include-zero", "z", false,
 		"don't omit the file which relevance is zero",
 	)
+}
+
+func main() {
+	if err := rootCmd.Execute(); err != nil {
+		logger.Err.Println(err)
+		os.Exit(1)
+	}
 }
