@@ -70,7 +70,7 @@ func init() {
 	)
 	rootCmd.Flags().BoolVarP(
 		&printZero, "include-zero", "z", false,
-		"don't omit the file which relevance is zero",
+		"show the files which relevance is zero",
 	)
 }
 
