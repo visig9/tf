@@ -1,17 +1,19 @@
 package main
 
 import (
+	"errors"
 	"os"
 
 	"github.com/spf13/cobra"
 
 	"gitlab.com/visig/tf/logger"
+	"gitlab.com/visig/tf/readline"
 	"gitlab.com/visig/tf/tfreq"
 )
 
 var version string
 
-var terms []string
+var files []string
 
 var caseInsensitive bool
 var ignoreFilename bool
@@ -19,16 +21,26 @@ var ignoreFilename bool
 var printZero bool
 
 var rootCmd = &cobra.Command{
-	Use:   os.Args[0] + " FILE...",
+	Use:   os.Args[0] + " TERM...",
 	Short: "Calculate term-frequency of files.",
 	Long: `Calculate term-frequency of files.
 
-  Calculate the term-frequency between FILE and TERMs.
-  Accept multiple -t TERMs and multiple FILEs at one time.
+  Calculate the term-frequency between TERMs and FILEs.
   This program also accept the FILEs from stdin.
 
   Source Code: https://gitlab.com/visig/tf
 	`,
+	Args: func(cmd *cobra.Command, args []string) error {
+		if len(args) < 1 {
+			return errors.New("requires at least one term")
+		}
+
+		if !readline.IsPipe(os.Stdin) && len(files) == 0 {
+			return errors.New("requires at least one file")
+		}
+
+		return nil
+	},
 	Run: func(cmd *cobra.Command, args []string) {
 		var flag tfreq.ScoreFlag
 		if !caseInsensitive {
@@ -38,17 +50,16 @@ var rootCmd = &cobra.Command{
 			flag = flag | tfreq.ScoreFilename
 		}
 
-		printScore(args, terms, flag, printZero)
+		printScore(files, args, flag, printZero)
 	},
 	Version: version,
 }
 
 func init() {
 	rootCmd.Flags().StringArrayVarP(
-		&terms, "term", "t", []string{},
-		"calculate by this key terms",
+		&files, "file", "f", []string{},
+		"files want be evaluated",
 	)
-	rootCmd.MarkFlagRequired("term")
 	rootCmd.Flags().BoolVarP(
 		&caseInsensitive, "case-insensitive", "C", false,
 		"scoring by case-insensitive",

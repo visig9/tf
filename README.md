@@ -11,10 +11,10 @@ A higher score meaning a higher relevance.
 ## Usage
 
 ```bash
-tf -t <term> <filename>...
-tf -t <term1> -t <term2> <filename>...
-echo <filename> | tf -t <term>
-find . -type f -iname '*.txt' | tf -t <term> | sort
+tf <term> -f <filename>
+tf <term1> <term2> <term3> -f <filename1> -f <filename2>
+echo <filename> | tf <term>
+find . -type f -iname '*.txt' | tf <term1> <term2> | sort
 ```
 
 Output example:
