@@ -2,7 +2,7 @@ image: golang:1.10
 
 stages:
   - test
-  - release
+#   - release
 
 variables:
   REPO_NAME: gitlab.com/visig/tf
@@ -18,14 +18,15 @@ test-job:
   script:
     - go test ./...
 
-tf-binary-dists:
-  stage: release
-  only:
-    - tags
-  script:
-    - ./maintain.sh build
-    - cp -Trv dist $CI_PROJECT_DIR/dist
-  artifacts:
-      name: tf-binary-dists
-      paths:
-        - $CI_PROJECT_DIR/dist/
+# ## Not good enough for end user, disable
+# tf-binary-dists:
+#   stage: release
+#   only:
+#     - tags
+#   script:
+#     - ./maintain.sh build
+#     - cp -Trv dist $CI_PROJECT_DIR/dist
+#   artifacts:
+#       name: tf-binary-dists
+#       paths:
+#         - $CI_PROJECT_DIR/dist/
