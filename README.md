@@ -17,6 +17,13 @@ echo <filename> | tf -t <term>
 find . -type f -iname '*.txt' | tf -t <term> | sort
 ```
 
+Output example:
+
+```bash
+0.140947213 file1.txt
+0.010238174 file2.txt
+```
+
 The input files be considered as using `utf8` encoding. No matter what the true encoding it is.
 
 
