@@ -41,22 +41,17 @@ func fscore(
 	return
 }
 
-type question struct {
-	path  string
-	terms []string
-	flag  tfreq.ScoreFlag
-}
 type answer struct {
-	q     question
+	path  string
 	score float64
 }
 
-func getPipe() *pipe.Pipe {
+func getPipe(terms []string, flag tfreq.ScoreFlag) *pipe.Pipe {
 	convert := func(x interface{}) interface{} {
-		q := x.(question)
+		path := x.(string)
 		return answer{
-			q:     q,
-			score: fscore(q.path, q.terms, q.flag),
+			path:  path,
+			score: fscore(path, terms, flag),
 		}
 	}
 
@@ -69,25 +64,17 @@ func printScore(
 	flag tfreq.ScoreFlag,
 	printZero bool,
 ) {
-	pip := getPipe()
+	pip := getPipe(terms, flag)
 
 	for _, path := range paths {
-		pip.In <- question{
-			path:  path,
-			terms: terms,
-			flag:  flag,
-		}
+		pip.In <- path
 	}
 
 	if readline.IsPipe(os.Stdin) {
 		ch := readline.Channel(os.Stdin)
 		go func() {
 			for path := range ch {
-				pip.In <- question{
-					path:  path,
-					terms: terms,
-					flag:  flag,
-				}
+				pip.In <- path
 			}
 			close(pip.In)
 		}()
@@ -102,7 +89,7 @@ func printScore(
 			logger.Std.Printf(
 				"%11.9f %v\n",
 				ans.score,
-				ans.q.path,
+				ans.path,
 			)
 		}
 	}
