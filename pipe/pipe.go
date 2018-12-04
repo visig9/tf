@@ -15,6 +15,8 @@ type taggedOutput struct {
 	data interface{}
 }
 
+type operation func(interface{}) interface{}
+
 // Pipe is core object of this package.
 //
 // All data in a pipe are processing asynchronously, and those data out
@@ -50,32 +52,24 @@ type Pipe struct {
 	// Out is data output channel.
 	// It will be closed automatically when In be closed and all
 	// pending data retrived from this channel.
-	Out     chan interface{}
-	convert func(interface{}) interface{}
+	Out chan interface{}
+	op  operation
 }
 
-func chainFns(
-	fns ...func(interface{}) interface{},
-) func(interface{}) interface{} {
-	chainTwoFunc := func(
-		fn,
-		next func(interface{}) interface{},
-	) func(interface{}) interface{} {
-		return func(x interface{}) interface{} {
-			return next(fn(x))
+func chainOps(ops ...operation) operation {
+	return func(input interface{}) interface{} {
+		output := input
+
+		for _, op := range ops {
+			output = op(output)
 		}
-	}
 
-	fn := fns[0]
-
-	for _, next := range fns[1:] {
-		fn = chainTwoFunc(fn, next)
+		return output
 	}
-	return fn
 }
 
 // New create a Pipe instance.
-func New(workers int, converts ...func(interface{}) interface{}) *Pipe {
+func New(workers int, ops ...operation) *Pipe {
 	if workers < 1 {
 		panic("Pipe's workers cannot < 1")
 	}
@@ -87,12 +81,12 @@ func New(workers int, converts ...func(interface{}) interface{}) *Pipe {
 		Out: make(chan interface{}, cSize),
 	}
 
-	convert := chainFns(converts...)
+	op := chainOps(ops...)
 
 	tic := make(chan taggedInput, cSize)
 	toc := make(chan taggedOutput, cSize)
 
-	pipe.startWorkers(workers, convert, tic, toc)
+	pipe.startWorkers(workers, op, tic, toc)
 	go pipe.inputRoutine(tic)
 	go pipe.outputRoutine(toc, cSize)
 
@@ -101,7 +95,7 @@ func New(workers int, converts ...func(interface{}) interface{}) *Pipe {
 
 func (pipe *Pipe) startWorkerRoutine(
 	wg *sync.WaitGroup,
-	convert func(interface{}) interface{},
+	op operation,
 	tic chan taggedInput,
 	toc chan taggedOutput,
 ) {
@@ -113,7 +107,7 @@ func (pipe *Pipe) startWorkerRoutine(
 		for tq := range tic {
 			toc <- taggedOutput{
 				id:   tq.id,
-				data: convert(tq.data),
+				data: op(tq.data),
 			}
 		}
 	}()
@@ -121,14 +115,14 @@ func (pipe *Pipe) startWorkerRoutine(
 
 func (pipe *Pipe) startWorkers(
 	workers int,
-	convert func(interface{}) interface{},
+	op operation,
 	tic chan taggedInput,
 	toc chan taggedOutput,
 ) {
 	var wg sync.WaitGroup
 
 	for i := 0; i < workers; i++ {
-		pipe.startWorkerRoutine(&wg, convert, tic, toc)
+		pipe.startWorkerRoutine(&wg, op, tic, toc)
 	}
 
 	// toc closing routine
