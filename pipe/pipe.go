@@ -35,24 +35,19 @@ type operation func(interface{}) interface{}
 //   pip := pipe.New(workerNumber, addOne, square)
 //
 //   for i := 0; i < 10; i++ {
-//     pip.In <- i  // inject the data
+//     pip.In() <- i  // inject the data
 //   }
-//   close(pip.In)  // after all data inject, close this pipe.
-//                  // it can free some goroutine resource and propagate
-//                  // the close to pip.Out at right time.
+//   close(pip.In())  // after all data inject, close this pipe.
+//                    // it can free some goroutine resource and propagate
+//                    // the close to pip.Out at right time.
 //
 //   for i := 0; i < 10; i++ {
-//     out := <-pip.Out
+//     out := <-pip.Out()
 //     fmt.Println("(%v+1)^2 == %v", i, out)  // output keep it order.
 //   }
 type Pipe struct {
-	// In is data input channel.
-	// close(pipe.In) for close whole pipe properly.
-	In chan interface{}
-	// Out is data output channel.
-	// It will be closed automatically when In be closed and all
-	// pending data retrived from this channel.
-	Out chan interface{}
+	in  chan interface{}
+	out chan interface{}
 	op  operation
 }
 
@@ -77,8 +72,8 @@ func New(workers int, ops ...operation) *Pipe {
 	cSize := workers * 10
 
 	pipe := Pipe{
-		In:  make(chan interface{}, cSize),
-		Out: make(chan interface{}, cSize),
+		in:  make(chan interface{}, cSize),
+		out: make(chan interface{}, cSize),
 	}
 
 	op := chainOps(ops...)
@@ -135,7 +130,7 @@ func (pipe *Pipe) startWorkers(
 
 func (pipe *Pipe) inputRoutine(tic chan taggedInput) {
 	count := 0
-	for data := range pipe.In {
+	for data := range pipe.in {
 		tic <- taggedInput{
 			id:   count,
 			data: data,
@@ -154,7 +149,7 @@ func (pipe *Pipe) outputRoutine(toc chan taggedOutput, cSize int) {
 		buf[ta.id] = ta.data
 
 		for data, hit := buf[next]; hit; data, hit = buf[next] {
-			pipe.Out <- data
+			pipe.out <- data
 
 			delete(buf, next)
 
@@ -162,5 +157,21 @@ func (pipe *Pipe) outputRoutine(toc chan taggedOutput, cSize int) {
 		}
 	}
 
-	close(pipe.Out)
+	close(pipe.out)
+}
+
+// In return a input end of this pipe.
+//
+// User can close this pipe by `close(pipe.In())`.
+//
+// pipe.Out() will keep alive until all pending data pass through
+// this pipe. After all data retrive from pipe.Out, Out end will also
+// be closed automatically.
+func (pipe *Pipe) In() chan<- interface{} {
+	return pipe.in
+}
+
+// Out return a output end of this pipe.
+func (pipe *Pipe) Out() <-chan interface{} {
+	return pipe.out
 }

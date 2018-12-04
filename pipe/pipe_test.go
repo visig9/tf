@@ -17,12 +17,12 @@ func TestPipe(t *testing.T) {
 		pip := pipe.New(4, echo)
 
 		for i := 0; i < inCount; i++ {
-			pip.In <- "hi"
+			pip.In() <- "hi"
 		}
-		close(pip.In)
+		close(pip.In())
 
 		outCount := 0
-		for range pip.Out {
+		for range pip.Out() {
 			outCount++
 		}
 
@@ -42,12 +42,12 @@ func TestPipeDataOrder(t *testing.T) {
 	pip := pipe.New(4, echo)
 
 	for _, c := range cases {
-		pip.In <- c
+		pip.In() <- c
 	}
-	close(pip.In)
+	close(pip.In())
 
 	for idx, c := range cases {
-		get := <-pip.Out
+		get := <-pip.Out()
 
 		if get != c {
 			t.Errorf(
@@ -106,10 +106,10 @@ func TestChain(t *testing.T) {
 
 	for _, c := range cases {
 		for _, in := range c {
-			pip.In <- in
+			pip.In() <- in
 		}
 		for _, in := range c {
-			out := <-pip.Out
+			out := <-pip.Out()
 			if square(addOne(in)) != out {
 				t.Errorf(
 					"x == %v, but (x+1)^2 == %v",

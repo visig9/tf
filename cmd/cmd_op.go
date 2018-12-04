@@ -67,22 +67,22 @@ func printScore(
 	pip := getPipe(terms, flag)
 
 	for _, path := range paths {
-		pip.In <- path
+		pip.In() <- path
 	}
 
 	if readline.IsPipe(os.Stdin) {
 		ch := readline.Channel(os.Stdin)
 		go func() {
 			for path := range ch {
-				pip.In <- path
+				pip.In() <- path
 			}
-			close(pip.In)
+			close(pip.In())
 		}()
 	} else {
-		close(pip.In)
+		close(pip.In())
 	}
 
-	for i := range pip.Out {
+	for i := range pip.Out() {
 		ans := i.(answer)
 
 		if printZero || ans.score > 0 {
