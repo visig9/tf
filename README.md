@@ -1,10 +1,10 @@
 # tf
 
-A command line tool for calculate term-frequency of files.
+A command line tool for calculate the relevance between TERMs and FILEs.
 
-It was designed for get some decent search result in filesystem directly without prepared external index nor particular tokenizing algorithm.
+It was designed for generate some decent searching result from filesystem without external index nor particular tokenizing algorithm.
 
-A higher score meaning a higher relevance.
+The program's name 'tf' mean the original algorithm Term-Frequency. But the program not fully respect the TF. It added some tweaks to enhance the relevance accuracy.
 
 
 
@@ -14,14 +14,14 @@ A higher score meaning a higher relevance.
 tf <term> -f <filename>
 tf <term1> <term2> <term3> -f <filename1> -f <filename2>
 echo <filename> | tf <term>
-find . -type f -iname '*.txt' | tf <term1> <term2> | sort
+find . -iname '*.txt' | tf <term1> <term2> | sort -n
 ```
 
 Output example:
 
 ```bash
-0.140947213 file1.txt
-0.010238174 file2.txt
+  0.14094721 file1.txt
+ 13.01023817 file2.txt
 ```
 
 The input files be considered as using `utf8` encoding. No matter what the true encoding it is.

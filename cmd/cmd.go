@@ -8,7 +8,7 @@ import (
 
 	"gitlab.com/visig/tf/logger"
 	"gitlab.com/visig/tf/readline"
-	"gitlab.com/visig/tf/tfreq"
+	"gitlab.com/visig/tf/textrel"
 )
 
 var version string
@@ -22,11 +22,12 @@ var printZero bool
 
 var rootCmd = &cobra.Command{
 	Use:   os.Args[0] + " TERM...",
-	Short: "Calculate term-frequency of files.",
-	Long: `Calculate term-frequency of files.
+	Short: "Calculate the relevance between FILEs and TERMs.",
+	Long: `Calculate the relevance between FILEs and TERMs.
 
-  Calculate the term-frequency between TERMs and FILEs.
-  This program also accept the FILEs from stdin.
+  This program are designd for evaluate the relevance between
+  FILEs and TERMs.
+  Accept FILEs from stdin.
 
   Source Code: https://gitlab.com/visig/tf
 	`,
@@ -42,12 +43,12 @@ var rootCmd = &cobra.Command{
 		return nil
 	},
 	Run: func(cmd *cobra.Command, args []string) {
-		var flag tfreq.ScoreFlag
-		if !caseInsensitive {
-			flag = flag | tfreq.ScoreCaseSensitive
+		var flag textrel.Flag
+		if caseInsensitive {
+			flag = flag | textrel.CaseInsensitive
 		}
 		if !ignoreFilename {
-			flag = flag | tfreq.ScoreFilename
+			flag = flag | textrel.Filename
 		}
 
 		printScore(files, args, flag, printZero)
@@ -58,11 +59,11 @@ var rootCmd = &cobra.Command{
 func init() {
 	rootCmd.Flags().StringArrayVarP(
 		&files, "file", "f", []string{},
-		"files want be evaluated",
+		"the files want be evaluated",
 	)
 	rootCmd.Flags().BoolVarP(
 		&caseInsensitive, "case-insensitive", "C", false,
-		"scoring by case-insensitive",
+		"scoring case-insensitive",
 	)
 	rootCmd.Flags().BoolVarP(
 		&ignoreFilename, "ignore-name", "N", false,

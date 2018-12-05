@@ -7,51 +7,24 @@ import (
 	"gitlab.com/visig/tf/logger"
 	"gitlab.com/visig/tf/pipe"
 	"gitlab.com/visig/tf/readline"
-	"gitlab.com/visig/tf/strescape"
-	"gitlab.com/visig/tf/tfreq"
+	"gitlab.com/visig/tf/textrel"
 )
-
-func fscore(
-	path string,
-	terms []string,
-	flag tfreq.ScoreFlag,
-) (ans float64) {
-	fi, err := os.Stat(path)
-
-	if err != nil {
-		pe := err.(*os.PathError)
-		logger.Err.Printf(
-			"ignore '%v': %v\n",
-			strescape.SingleQuote(pe.Path), pe.Err,
-		)
-
-		return
-	}
-
-	switch mode := fi.Mode(); {
-	case mode.IsDir():
-		logger.Err.Printf(
-			"ignore '%v': is a directory\n",
-			strescape.SingleQuote(path),
-		)
-	case mode.IsRegular():
-		ans = tfreq.FileScore(path, terms, flag)
-	}
-
-	return
-}
 
 type answer struct {
 	path  string
 	score float64
+	err   error
 }
 
-func getPipe(terms []string, flag tfreq.ScoreFlag) *pipe.Pipe {
+func getPipe(terms []string, flag textrel.Flag) *pipe.Pipe {
 	convert := func(x interface{}) interface{} {
 		path := x.(string)
+		score, err := textrel.FileByTerms(path, terms, flag)
+
 		return answer{
-			path:  path,
-			score: fscore(path, terms, flag),
+			path,
+			score,
+			err,
 		}
 	}
 
@@ -61,7 +34,7 @@ func getPipe(terms []string, flag tfreq.ScoreFlag) *pipe.Pipe {
 func printScore(
 	paths,
 	terms []string,
-	flag tfreq.ScoreFlag,
+	flag textrel.Flag,
 	printZero bool,
 ) {
 	pip := getPipe(terms, flag)
@@ -85,9 +58,15 @@ func printScore(
 	for i := range pip.Out() {
 		ans := i.(answer)
 
-		if printZero || ans.score > 0 {
+		switch {
+		case ans.err != nil:
+			logger.Err.Printf(
+				"ignore, %v\n",
+				ans.err,
+			)
+		case printZero || ans.score > 0:
 			logger.Std.Printf(
-				"%11.9f %v\n",
+				"%13.8f %v\n",
 				ans.score,
 				ans.path,
 			)
