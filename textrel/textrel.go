@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-func dedupStrings(ss []string) []string {
+func dedup(ss []string) []string {
 	set := make(map[string]struct{})
 
 	for _, s := range ss {
@@ -27,15 +27,10 @@ func dedupStrings(ss []string) []string {
 	return result
 }
 
-func toLowerCase(text string, terms []string) (
-	ltext string,
-	lterms []string,
-) {
-	ltext = strings.ToLower(text)
-
-	lterms = make([]string, len(terms))
-	for idx, term := range terms {
-		lterms[idx] = strings.ToLower(term)
+func toLowerCase(texts ...string) (lterms []string) {
+	lterms = make([]string, len(texts))
+	for idx, text := range texts {
+		lterms[idx] = strings.ToLower(text)
 	}
 
 	return
@@ -44,13 +39,12 @@ func toLowerCase(text string, terms []string) (
 // Flag can modify Score operation.
 type Flag int
 
-// Those flag can change the behavior of Score and FileScore
+// Those flag can change the behavior of FileByTerms
 const (
-
 	// case insensitive scoring.
 	CaseInsensitive Flag = 1 << iota
 
-	// add score of file name in FileScore.
+	// score of file name in FileScore.
 	Filename
 )
 
@@ -58,12 +52,8 @@ const (
 // and terms.
 //
 // The larger number meaning higher relevance. The 0 mean no relevance.
-func ByTerms(text string, terms []string, flag Flag) (score float64) {
-	if flag&CaseInsensitive != 0 {
-		text, terms = toLowerCase(text, terms)
-	}
-
-	terms = dedupStrings(terms)
+func ByTerms(text string, terms []string) (score float64) {
+	terms = dedup(terms)
 
 	textLength := float64(strings.Count(text, "") - 1)
 
@@ -79,7 +69,7 @@ func ByTerms(text string, terms []string, flag Flag) (score float64) {
 	return
 }
 
-// FileByTerm calculate and the relevance between the terms and the file.
+// FileByTerms calculate and the relevance between the terms and the file.
 //
 // The err != nil if file read fail.
 func FileByTerms(fpath string, terms []string, flag Flag) (
@@ -90,12 +80,21 @@ func FileByTerms(fpath string, terms []string, flag Flag) (
 	if err != nil {
 		return 0, err
 	}
-	score += ByTerms(string(content), terms, flag)
+
+	text := string(content)
+	fname := filepath.Base(fpath)
+
+	if flag&CaseInsensitive != 0 {
+		text = strings.ToLower(text)
+		fname = strings.ToLower(fname)
+		terms = toLowerCase(terms...)
+	}
 
 	if flag&Filename != 0 {
-		fname := filepath.Base(fpath)
-		score += ByTerms(fname, terms, flag)
+		score += ByTerms(fname, terms)
 	}
+
+	score += ByTerms(text, terms)
 
 	return score, nil
 }

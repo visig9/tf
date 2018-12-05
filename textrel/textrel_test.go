@@ -9,49 +9,36 @@ import (
 
 var tolerance = 0.00001
 
-func TestScore(t *testing.T) {
+func TestByTerms(t *testing.T) {
 	cases := []struct {
 		text  string
 		terms []string
-		flag  textrel.Flag
 		want  float64
 	}{
-		{"", []string{""}, 0, 0},
-		{"", []string{"apple"}, 0, 0},
-		{"My apple", []string{}, 0, 0},
-		{"My apple", []string{"apple"}, 0, 5.0 / 8},
-		{"My apple",
-			[]string{"apple", "apple"},
-			0,
-			(5.0 / 8) * 1},
+		{"", []string{""}, 0},
+		{"", []string{"apple"}, 0},
+		{"My apple", []string{}, 0},
+		{"My apple", []string{"apple"}, 5.0 / 8},
+		{"My apple", []string{"apple", "apple"}, (5.0 / 8) * 1},
 		{"My apple is the best!",
 			[]string{"apple"},
-			0,
 			(5.0 / 21) * 1},
 		{"My apple is the best apple",
 			[]string{"apple "},
-			0,
 			(6.0 / 26) * 1},
 		{"My apple is the best apple",
 			[]string{"apple"},
-			0,
 			(10.0 / 26) * 2},
 		{"My Apple is the best apple",
 			[]string{"app"},
-			textrel.CaseInsensitive,
-			(6.0 / 26) * 2},
-		{"My Apple is the best apple",
-			[]string{"app"},
-			0,
 			(3.0 / 26) * 1},
 		{"My Apple is the best apple",
 			[]string{"apple", "is"},
-			0,
 			(5.0/26)*1 + (2.0/26)*1},
 	}
 
 	for _, c := range cases {
-		s := textrel.ByTerms(c.text, c.terms, c.flag)
+		s := textrel.ByTerms(c.text, c.terms)
 		if math.Abs(c.want-s) > tolerance {
 			t.Errorf(
 				"Score(%q, %q) == %v, want: %v",
@@ -64,13 +51,13 @@ func TestScore(t *testing.T) {
 	}
 }
 
-func TestFileScore(t *testing.T) {
+func TestFileByTerms(t *testing.T) {
 	cases := []struct {
-		fpath  string
-		terms  []string
-		flag   textrel.Flag
-		want   float64
-		haserr bool
+		fpath   string
+		terms   []string
+		flag    textrel.Flag
+		want    float64
+		wantErr bool
 	}{
 		{"testdata/apple-not-exists.txt", []string{"apple"},
 			0,
@@ -111,7 +98,7 @@ func TestFileScore(t *testing.T) {
 			)
 		}
 
-		if c.haserr && (err == nil) || !c.haserr && (err != nil) {
+		if c.wantErr && (err == nil) || !c.wantErr && (err != nil) {
 			t.Errorf(
 				"FileScore(%q, %q, %b) want err",
 				c.fpath,
