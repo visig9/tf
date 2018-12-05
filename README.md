@@ -41,9 +41,8 @@ The input files be considered as using `utf8` encoding. No matter what the true 
 Prepare a golang environment, then:
 
 ```bash
-git clone https://gitlab.com/visig/tf $(go env GOPATH)/src/gitlab.com/visig/tf
+go get -d -t gitlab.com/visig/tf/...
 cd $(go env GOPATH)/src/gitlab.com/visig/tf
-go get ./...
 ./maintain.sh install
 ```
 
