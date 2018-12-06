@@ -1,26 +1,23 @@
-export PACKAGE=gitlab.com/visig/tf/cmd
-export NAME=tf
-export VERSION=`git describe`
-
-build_requirement() {
-    go get github.com/inconshreveable/mousetrap
-}
+PACKAGE=gitlab.com/visig/tf/cmd
+NAME=tf
+VERSION=`git describe`
+TMPDIR=/tmp/tf-$VERSION
 
 build_dist() {
     local goos=$1
     local goarch=$2
+    local target=$3
 
-    if [[ -z $3 ]]; then
+    if [[ -z $target ]]; then
         local target=dist/$VERSION/${NAME}.${goos}-${goarch}.$VERSION
-    else
-        local target=$3
     fi
 
     if [[ $goos = windows ]]; then
         target=$target.exe
     fi
 
-    GOOS=${goos} GOARCH=${goarch} go build\
+    GOOS=${goos} GOARCH=${goarch} go get ./...\
+    && GOOS=${goos} GOARCH=${goarch} go build\
         -ldflags "-X main.version=${VERSION}"\
         -o $target\
         -v $PACKAGE\
@@ -28,8 +25,6 @@ build_dist() {
 }
 
 build_all_dist() {
-    build_requirement
-
     build_dist linux 386
     build_dist linux amd64
     build_dist linux arm
