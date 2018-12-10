@@ -59,32 +59,32 @@ func TestPipeDataOrder(t *testing.T) {
 }
 
 func TestPipePanic(t *testing.T) {
-	testfunc := func(workers int, wantPanic bool) {
+	testfunc := func(chansize int, wantPanic bool) {
 		defer func() {
 			err := recover()
 			if isPanic := err != nil; isPanic != wantPanic {
 				t.Errorf(
-					"workers: %v; panic: %v",
-					workers, isPanic,
+					"chansize: %v; panic: %v",
+					chansize, isPanic,
 				)
 			}
 		}()
-		pipe.New(workers, echo)
+		pipe.New(chansize, echo)
 	}
 
 	cases := []struct {
-		workers   int
+		chansize  int
 		wantPanic bool
 	}{
 		{2, false},
 		{1, false},
-		{0, true},
+		{0, false},
 		{-1, true},
 		{-2, true},
 	}
 
 	for _, c := range cases {
-		testfunc(c.workers, c.wantPanic)
+		testfunc(c.chansize, c.wantPanic)
 	}
 }
 

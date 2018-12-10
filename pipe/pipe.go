@@ -2,6 +2,7 @@
 package pipe
 
 import (
+	"runtime"
 	"sync"
 )
 
@@ -64,26 +65,24 @@ func chainOps(ops ...operation) operation {
 }
 
 // New create a Pipe instance.
-func New(workers int, ops ...operation) *Pipe {
-	if workers < 1 {
-		panic("Pipe's workers cannot < 1")
+func New(chansize int, ops ...operation) *Pipe {
+	if chansize < 0 {
+		panic("channel size cannot < 0")
 	}
 
-	cSize := workers * 10
-
 	pipe := Pipe{
-		in:  make(chan interface{}, cSize),
-		out: make(chan interface{}, cSize),
+		in:  make(chan interface{}, chansize),
+		out: make(chan interface{}, chansize),
 	}
 
 	op := chainOps(ops...)
 
-	tic := make(chan taggedInput, cSize)
-	toc := make(chan taggedOutput, cSize)
+	tic := make(chan taggedInput, chansize)
+	toc := make(chan taggedOutput, chansize)
 
-	pipe.startWorkers(workers, op, tic, toc)
+	pipe.startWorkers(runtime.NumCPU(), op, tic, toc)
 	go pipe.inputRoutine(tic)
-	go pipe.outputRoutine(toc, cSize)
+	go pipe.outputRoutine(toc, chansize)
 
 	return &pipe
 }

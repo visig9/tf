@@ -2,7 +2,6 @@ package main
 
 import (
 	"os"
-	"runtime"
 
 	"gitlab.com/visig/tf/logger"
 	"gitlab.com/visig/tf/pipe"
@@ -28,7 +27,7 @@ func getPipe(terms []string, flag textrel.Flag) *pipe.Pipe {
 		}
 	}
 
-	return pipe.New(runtime.NumCPU(), convert)
+	return pipe.New(10, convert)
 }
 
 func printScore(
