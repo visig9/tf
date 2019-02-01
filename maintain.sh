@@ -1,4 +1,4 @@
-PACKAGE=gitlab.com/visig/tf/cmd
+PACKAGE=github.com/visig9/tf/cmd
 NAME=tf
 VERSION=`git describe`
 TMPDIR=/tmp/tf-$VERSION

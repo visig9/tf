@@ -3,10 +3,10 @@ package main
 import (
 	"os"
 
-	"gitlab.com/visig/tf/logger"
-	"gitlab.com/visig/tf/pipe"
-	"gitlab.com/visig/tf/readline"
-	"gitlab.com/visig/tf/textrel"
+	"github.com/visig9/tf/logger"
+	"github.com/visig9/tf/pipe"
+	"github.com/visig9/tf/readline"
+	"github.com/visig9/tf/textrel"
 )
 
 type answer struct {

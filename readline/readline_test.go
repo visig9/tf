@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"gitlab.com/visig/tf/readline"
+	"github.com/visig9/tf/readline"
 )
 
 var testlines = []string{

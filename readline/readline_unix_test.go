@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"gitlab.com/visig/tf/readline"
+	"github.com/visig9/tf/readline"
 	"golang.org/x/sys/unix"
 )
 

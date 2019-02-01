@@ -4,7 +4,7 @@ import (
 	"math"
 	"testing"
 
-	"gitlab.com/visig/tf/textrel"
+	"github.com/visig9/tf/textrel"
 )
 
 var tolerance = 0.00001

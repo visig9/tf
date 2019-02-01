@@ -6,9 +6,9 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"gitlab.com/visig/tf/logger"
-	"gitlab.com/visig/tf/readline"
-	"gitlab.com/visig/tf/textrel"
+	"github.com/visig9/tf/logger"
+	"github.com/visig9/tf/readline"
+	"github.com/visig9/tf/textrel"
 )
 
 var version string

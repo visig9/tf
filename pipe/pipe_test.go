@@ -3,7 +3,7 @@ package pipe_test
 import (
 	"testing"
 
-	"gitlab.com/visig/tf/pipe"
+	"github.com/visig9/tf/pipe"
 )
 
 func echo(x interface{}) interface{} {
