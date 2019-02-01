@@ -1,5 +1,7 @@
 # tf
 
+[![Build Status](https://travis-ci.org/visig9/tf.svg?branch=master)](https://travis-ci.org/visig9/tf)
+
 A command line tool for calculate the relevance between TERMs and FILEs.
 
 It was designed for generate some decent searching result from filesystem without external index nor particular tokenizing algorithm.
