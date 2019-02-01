@@ -34,7 +34,7 @@ The input files be considered as using `utf8` encoding. No matter what the true 
 
 ### Pre-build Files
 
-<https://gitlab.com/visig/tf/tags>
+<https://github.com/visig9/tf/releases>
 
 
 
@@ -43,8 +43,8 @@ The input files be considered as using `utf8` encoding. No matter what the true 
 Prepare a golang environment, then:
 
 ```bash
-go get -d -t gitlab.com/visig/tf/...
-cd $(go env GOPATH)/src/gitlab.com/visig/tf
+go get -d -t github.com/visig9/tf/...
+cd $(go env GOPATH)/src/github.com/visig9/tf
 ./maintain.sh install
 ```
 

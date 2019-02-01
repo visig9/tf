@@ -29,7 +29,7 @@ var rootCmd = &cobra.Command{
   FILEs and TERMs.
   Accept FILEs from stdin.
 
-  Source Code: https://gitlab.com/visig/tf
+  Source Code: https://github.com/visig9/tf
 	`,
 	Args: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 {
