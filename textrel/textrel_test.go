@@ -51,6 +51,30 @@ func TestByTerms(t *testing.T) {
 	}
 }
 
+func TestByTermsCI(t *testing.T) {
+	cases := []struct {
+		text  string
+		terms []string
+		want  float64
+	}{
+		{"My apple", []string{"apple"}, 5.0 / 8},
+		{"My apple", []string{"my"}, 2.0 / 8},
+	}
+
+	for _, c := range cases {
+		s := textrel.ByTermsCI(c.text, c.terms)
+		if math.Abs(c.want-s) > tolerance {
+			t.Errorf(
+				"Score(%q, %q) == %v, want: %v",
+				c.text,
+				c.terms,
+				s,
+				c.want,
+			)
+		}
+	}
+}
+
 func TestFileByTerms(t *testing.T) {
 	cases := []struct {
 		fpath   string
@@ -74,6 +98,18 @@ func TestFileByTerms(t *testing.T) {
 		{"testdata/apple.txt", []string{"apple"},
 			0,
 			(10.0 / 28) * 2,
+			false},
+		{"testdata/apple.txt", []string{"My"},
+			0,
+			(2.0 / 28) * 1,
+			false},
+		{"testdata/apple.txt", []string{"my"},
+			0,
+			(0.0 / 28) * 0,
+			false},
+		{"testdata/apple.txt", []string{"my"},
+			textrel.CaseInsensitive,
+			(2.0 / 28) * 1,
 			false},
 		{"testdata/apple.txt", []string{"app"},
 			textrel.Filename,

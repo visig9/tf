@@ -48,6 +48,8 @@ const (
 	Filename
 )
 
+type scoreFunc func(text string, terms []string) (score float64)
+
 // ByTerms calculate and return the total relevance between the text
 // and terms.
 //
@@ -69,6 +71,15 @@ func ByTerms(text string, terms []string) (score float64) {
 	return
 }
 
+// ByTermsCI calculate and return the total relevance between the text
+// and terms. (case-insensitive)
+func ByTermsCI(text string, terms []string) (score float64) {
+	text = strings.ToLower(text)
+	terms = toLowerCase(terms...)
+
+	return ByTerms(text, terms)
+}
+
 // FileByTerms calculate and the relevance between the terms and the file.
 //
 // The err != nil if file read fail.
@@ -84,17 +95,18 @@ func FileByTerms(fpath string, terms []string, flag Flag) (
 	text := string(content)
 	fname := filepath.Base(fpath)
 
+	var scoreFn scoreFunc
 	if flag&CaseInsensitive != 0 {
-		text = strings.ToLower(text)
-		fname = strings.ToLower(fname)
-		terms = toLowerCase(terms...)
+		scoreFn = ByTermsCI
+	} else {
+		scoreFn = ByTerms
 	}
 
 	if flag&Filename != 0 {
-		score += ByTerms(fname, terms)
+		score += scoreFn(fname, terms)
 	}
 
-	score += ByTerms(text, terms)
+	score += scoreFn(text, terms)
 
 	return score, nil
 }
